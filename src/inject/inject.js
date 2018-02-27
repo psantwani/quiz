@@ -8,18 +8,36 @@ chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
         result[option] = 1;
       }
     });
-    alert(result);
+    
+    let keys = Object.keys(result);
+    if(keys.length > 1){
+      keys.forEach(option => {
+        var count = findString(option, true);
+        result[option] = count;
+      });
+
+      alert(JSON.stringify(result, null, 4));
+    }
+    else{
+      alert(JSON.stringify(result, null, 4));
+    }
 
     sendResponse({ success: true });
   }
 });
 
-function findString(str) {
+function findString(str, getCount=false) {
+  let count = 1;
   if (parseInt(navigator.appVersion) < 4) return;
   var strFound;
   if (window.find) {
     // CODE FOR BROWSERS THAT SUPPORT window.find
-
+    if(getCount){
+      while(self.find(str)){
+        count++;
+      }
+      return count;
+    }
     strFound = self.find(str);
     if (!strFound) {
       strFound = self.find(str, 0, 1);
@@ -50,3 +68,4 @@ function findString(str) {
 }
 
 // https://www.google.co.in/search?game=quizmaster&q=hello&options=adele;tom hanks
+// https://www.google.co.in/search?q=who+has+been+india%27s+longest-+serving+prime+minister&game=quizmaster&options=options=jawaharlal nehru;indira gandhi;manmohan singh
