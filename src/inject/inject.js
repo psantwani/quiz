@@ -1,15 +1,59 @@
+const commonWords = ["from", "in", "with", "is", "was", "will", "and", "or", "but", "nor", "so", "for", "yet", "after",
+"although", "as", "because", "before", "once", "since", "though", "till", "unless", "until",
+"what", "when", "while", "about", "to", "besides", "like", "between", "under", "after", "beyond", "of", "by",
+"off", "until", "along", "despite", "on", "with", "at", "for", "in", "into", "a", "an", "the"];
+
+
 chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
   if (request.action == "find_best_option") {
     let { q, qOptions } = request.payload;
-    let result = {};
+    let result = [];
     let body = document.getElementById("res").innerText.toLocaleLowerCase();
     qOptions.forEach(option => {
       option = option.toLocaleLowerCase();
       var found = findString(body, option);
       if (found) {
-        result[option] = found;
+        // result[option] = found;
+        result.push({
+          option,
+          count: found
+        })
       }
     });
+
+    if(result.length){
+      result.sort((a, b) => {
+        return parseInt(b.count) > parseInt(a.count);
+      });
+    }
+    else{
+      qOptions.forEach(option => {
+        option = option.toLocaleLowerCase();
+        var words = option.split(" ");
+        for (let index = 0; index < words.length; index++) {
+          const word = words[index];
+          if(commonWords.indexOf(word) > -1){
+            continue;
+          }
+
+          var found = findString(body, word);
+          if (found) {
+            result.push({
+              option,
+              word,
+              count: found,
+              type: "PARTIAL"
+            })
+          }
+        }
+      });
+
+      if(result.length){
+        result.sort((a, b) => {
+          return parseInt(b.count) > parseInt(a.count);
+        });
+      }
+    }
 
     alert(JSON.stringify(result, null, 4));
     
