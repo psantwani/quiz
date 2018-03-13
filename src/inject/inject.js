@@ -7,20 +7,26 @@ const commonWords = ["from", "in", "with", "is", "was", "will", "and", "or", "bu
 chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
   if (request.action == "find_best_option") {
     let { q, qOptions } = request.payload;
+    console.log(qOptions);
+    if(qOptions.length === 0 || qOptions[0] === ""){
+      alert("No options");
+    }
     let result = [];
     const colors=['red', 'green', 'blue', 'yellow'];
     let body = document.getElementById("res").innerText.toLocaleLowerCase();
     qOptions.forEach((option, index) => {
-      option = option.toLocaleLowerCase();
-      var found = findString(body, option);
-      var color = colors[index];
-      if (found) {
-        // result[option] = found;
-        result.push({
-          option,
-          count: found,
-          color
-        })
+      if(option != ""){
+        option = option.toLocaleLowerCase();
+        var found = findString(body, option);
+        var color = colors[index];
+        if (found) {
+          // result[option] = found;
+          result.push({
+            option,
+            count: found,
+            color
+          })
+        }
       }
     });
 
@@ -60,14 +66,22 @@ chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
       }
     }
 
-    let html = '<table border="1"><th>option</th><th>match</th><th>count</th>';
+    if(!result.length){
+      $("#res").prepend("<p>Couldnt answer</p>");
+      return;
+    }
+
+    let html = '<table style="border: 1px solid black; border-collapse: collapse;">';
     for (let index = 0; index < result.length; index++) {
       const element = result[index];
       var option = element.option || 'NA';
       var word = element.word || option;
       var count = element.count || 0; 
       var color = element.color || 'black';
-      html += `<tr style="color:${color}"><td>${option}</td><td>${word}</td><td>${count}</td></tr>`
+      html += `<tr style="color:${color}; border: 1px solid black;">
+        <td style="border: 1px solid black;padding:5px">${option}</td>
+        <td style="border: 1px solid black;padding:5px">${word}</td>
+        <td style="border: 1px solid black;padding:5px">${count}</td></tr>`
     }
     html += '</table>'
     $("#res").prepend(html);
