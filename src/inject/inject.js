@@ -8,15 +8,18 @@ chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
   if (request.action == "find_best_option") {
     let { q, qOptions } = request.payload;
     let result = [];
+    const colors=['red', 'green', 'blue', 'yellow'];
     let body = document.getElementById("res").innerText.toLocaleLowerCase();
-    qOptions.forEach(option => {
+    qOptions.forEach((option, index) => {
       option = option.toLocaleLowerCase();
       var found = findString(body, option);
+      var color = colors[index];
       if (found) {
         // result[option] = found;
         result.push({
           option,
-          count: found
+          count: found,
+          color
         })
       }
     });
@@ -27,8 +30,9 @@ chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
       });
     }
     else{
-      qOptions.forEach(option => {
+      qOptions.forEach((option, index) => {
         option = option.toLocaleLowerCase();
+        var color = colors[index];
         var words = option.split(" ");
         for (let index = 0; index < words.length; index++) {
           const word = words[index];
@@ -42,7 +46,8 @@ chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
               option,
               word,
               count: found,
-              type: "PARTIAL"
+              type: "PARTIAL",
+              color
             })
           }
         }
@@ -55,7 +60,19 @@ chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
       }
     }
 
-    alert(JSON.stringify(result, null, 4));
+    let html = '<table border="1"><th>option</th><th>match</th><th>count</th>';
+    for (let index = 0; index < result.length; index++) {
+      const element = result[index];
+      var option = element.option || 'NA';
+      var word = element.word || option;
+      var count = element.count || 0; 
+      var color = element.color || 'black';
+      html += `<tr style="color:${color}"><td>${option}</td><td>${word}</td><td>${count}</td></tr>`
+    }
+    html += '</table>'
+    $("#res").prepend(html);
+       
+    // alert(JSON.stringify(result, null, 4));
     
     /**
     let keys = Object.keys(result);
